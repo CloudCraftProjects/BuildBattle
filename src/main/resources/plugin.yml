@@ -1,0 +1,8 @@
+name: BuildBattle
+version: @version@
+main: tk.booky.buildbattle.BuildBattleMain
+api-version: 1.16
+prefix: BB
+depend: [ PlotSquared ]
+authors: [ booky10 ]
+website: https://booky.tk/
