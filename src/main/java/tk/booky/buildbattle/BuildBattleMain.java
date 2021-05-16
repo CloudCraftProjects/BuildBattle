@@ -5,13 +5,16 @@ import com.plotsquared.bukkit.util.BukkitUtil;
 import com.plotsquared.core.api.PlotAPI;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
+import com.plotsquared.core.plot.PlotId;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.EntitySelectorArgument;
+import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,6 +23,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class BuildBattleMain extends JavaPlugin implements Listener {
 
@@ -114,6 +120,71 @@ public final class BuildBattleMain extends JavaPlugin implements Listener {
                     } else {
                         CommandAPI.fail("Dazu hast du keine Rechte!");
                         return -1;
+                    }
+                })
+                .register();
+
+        new CommandAPICommand("rate")
+                .withPermission("buildbattle.command.rate")
+                .withArguments(new IntegerArgument("rating", 0, 10))
+                .executesPlayer((sender, args) -> {
+                    int rating = (int) args[0];
+
+                    BukkitPlayer player = BukkitUtil.getPlayer(sender);
+                    Plot plot = player.getCurrentPlot();
+
+                    if (plot == null) {
+                        CommandAPI.fail("You are not standing on a plot currently!");
+                    } else {
+                        getConfig().set("rating." + plot.getId() + "." + player.getUUID(), rating);
+                        saveConfig();
+
+                        sender.sendMessage("Das Rating für Plot " + plot.getId() + " wurde auf " + rating + " geändert!");
+                    }
+
+                    return rating;
+                })
+                .register();
+
+        new CommandAPICommand("top")
+                .executes((sender, args) -> {
+                    ConfigurationSection section = getConfig().getConfigurationSection("rating");
+
+                    if (section != null) {
+                        Set<String> keys = section.getKeys(false);
+                        Map<String, Integer> ratings = new HashMap<>();
+
+                        for (String plot : keys) {
+                            ConfigurationSection plotSection = section.getConfigurationSection(plot);
+                            int rating = 0;
+
+                            if (plotSection == null) continue;
+                            Set<String> uuids = plotSection.getKeys(false);
+
+                            for (String uuid : uuids) rating += plotSection.getInt(uuid);
+                            ratings.put(plot, rating);
+                        }
+
+                        List<Map.Entry<String, Integer>> entries = new ArrayList<>(ratings.entrySet());
+
+                        entries.sort(Map.Entry.comparingByValue());
+                        Collections.reverse(entries);
+
+                        AtomicInteger count = new AtomicInteger(0);
+                        sender.sendMessage("Top 10 Rated:");
+
+                        entries.stream().limit(10).map(entry -> {
+                            PlotId id = PlotId.fromStringOrNull(entry.getKey());
+                            if (id == null) {
+                                return count.incrementAndGet() + ". " + entry.getKey() + " (UNKNOWN): " + entry.getValue();
+                            } else {
+                                Plot plot = api.getPlotSquared().getPlot(api.getPlotSquared().getFirstPlotArea(), id);
+                                String owners = Stream.concat(plot.getOwners().stream(), plot.getTrusted().stream()).map(uuid -> Bukkit.getOfflinePlayer(uuid).getName()).collect(Collectors.joining(", "));
+                                return count.incrementAndGet() + ". " + plot.getId() + " (" + owners + "): " + entry.getValue();
+                            }
+                        }).forEach(sender::sendMessage);
+                    } else {
+                        CommandAPI.fail("No ratings have been set yet!");
                     }
                 })
                 .register();
