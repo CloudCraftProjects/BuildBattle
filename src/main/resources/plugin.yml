@@ -3,6 +3,6 @@ version: @version@
 main: tk.booky.buildbattle.BuildBattleMain
 api-version: 1.16
 prefix: BB
-depend: [ PlotSquared ]
+depend: [ PlotSquared, CommandAPI ]
 authors: [ booky10 ]
 website: https://booky.tk/
