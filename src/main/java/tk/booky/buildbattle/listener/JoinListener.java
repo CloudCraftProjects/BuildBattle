@@ -18,7 +18,7 @@ public class JoinListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         // Get the bukkit instance for the joining player
-        BukkitPlayer player = BukkitUtil.getPlayer(event.getPlayer());
+        BukkitPlayer player = BukkitUtil.adapt(event.getPlayer());
 
         // Get the plots of the joining player
         Set<Plot> plots = player.getPlots();
@@ -29,10 +29,10 @@ public class JoinListener implements Listener {
             // Check if the teleportation process was successful
             if (success) {
                 // Send the player a message, that it was
-                player.sendMessage(Constants.PREFIX + "§aDu wurdest erfolgreich zu deinem Plot teleportiert!");
+                event.getPlayer().sendMessage(Constants.PREFIX + "§aDu wurdest erfolgreich zu deinem Plot teleportiert!");
             } else {
                 // Send the player a message, that it wasn't
-                player.sendMessage(Constants.PREFIX + "§cEs gab einen Fehler, während versucht wurde dich zu deinem Plot zu teleportieren!");
+                event.getPlayer().sendMessage(Constants.PREFIX + "§cEs gab einen Fehler, während versucht wurde dich zu deinem Plot zu teleportieren!");
             }
         };
 
@@ -42,27 +42,22 @@ public class JoinListener implements Listener {
             plots.iterator().next().teleportPlayer(player, teleport);
         } else {
             // Get the first existing plot area
-            PlotArea area = Constants.PLOTS.getPlotSquared().getFirstPlotArea();
+            PlotArea area = Constants.PLOTS.getPlotSquared().getPlotAreaManager().getAllPlotAreas()[0];
 
             // Check if one exists
-            if (area == null) {
-                // Inform the player that no current plot area exists
-                player.sendMessage(Constants.PREFIX + "§cDa noch keine Plot-Welt existiert, konnte dir kein Plot zugewiesen werden!");
+            // Get the next free plot relative to 0 0
+            Plot plot = area.getNextFreePlot(player, null);
+
+            // Check if a free plot has been found
+            if (plot == null) {
+                // Inform the player that no free plot could be found
+                event.getPlayer().sendMessage(Constants.PREFIX + "§cEs gab einen Fehler beim zuweisen eines Plots!");
             } else {
-                // Get the next free plot relative to 0 0
-                Plot plot = area.getNextFreePlot(player, null);
+                // Claim the free plot
+                plot.claim(player, false, null, true);
 
-                // Check if a free plot has been found
-                if (plot == null) {
-                    // Inform the player that no free plot could be found
-                    player.sendMessage(Constants.PREFIX + "§cEs gab einen Fehler beim zuweisen eines Plots!");
-                } else {
-                    // Claim the free plot
-                    plot.claim(player, false, null, true);
-
-                    // Teleport the player to his first plot
-                    plot.teleportPlayer(player, teleport);
-                }
+                // Teleport the player to his first plot
+                plot.teleportPlayer(player, teleport);
             }
         }
     }

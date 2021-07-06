@@ -1,7 +1,7 @@
 package tk.booky.buildbattle.utils;
 // Created by booky10 in BuildBattle (19:25 16.05.21)
 
-import com.plotsquared.core.api.PlotAPI;
+import com.plotsquared.core.PlotAPI;
 
 public class Constants {
 

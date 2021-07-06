@@ -59,15 +59,19 @@ public class TopCommand extends CommandAPICommand implements CommandExecutor {
                 AtomicInteger count = new AtomicInteger(0);
                 sender.sendMessage("Top 10 Rated:");
 
-                PlotArea area = Constants.PLOTS.getPlotSquared().getFirstPlotArea();
+                PlotArea area = Constants.PLOTS.getPlotSquared().getPlotAreaManager().getAllPlotAreas()[0];
                 entries.stream().limit(10).map(entry -> {
                     PlotId id = PlotId.fromStringOrNull(entry.getKey());
                     if (id == null) {
                         return count.incrementAndGet() + ". " + entry.getKey() + " (UNKNOWN): " + entry.getValue();
                     } else {
-                        Plot plot = Constants.PLOTS.getPlotSquared().getPlot(area, id);
-                        String owners = Stream.concat(plot.getOwners().stream(), plot.getTrusted().stream()).map(uuid -> Bukkit.getOfflinePlayer(uuid).getName()).collect(Collectors.joining(", "));
-                        return count.incrementAndGet() + ". " + plot.getId() + " (" + owners + "): " + entry.getValue();
+                        Plot plot = area.getPlot(id);
+                        if (plot == null) {
+                            return count.incrementAndGet() + ". " + entry.getKey() + " (UNKNOWN): " + entry.getValue();
+                        } else {
+                            String owners = Stream.concat(plot.getOwners().stream(), plot.getTrusted().stream()).map(uuid -> Bukkit.getOfflinePlayer(uuid).getName()).collect(Collectors.joining(", "));
+                            return count.incrementAndGet() + ". " + plot.getId() + " (" + owners + "): " + entry.getValue();
+                        }
                     }
                 }).forEach(sender::sendMessage);
             } else {

@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'tk.booky'
-version = '1.4-SNAPSHOT'
+version = '1.5.0'
 
 repositories {
     mavenLocal()
@@ -20,15 +20,16 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.booky.booktopia:booktopia-api:1.16.5-R0.1-SNAPSHOT-master'
+    implementation 'io.papermc.paper:paper-api:1.17-R0.1-SNAPSHOT'
 
     implementation 'dev.jorel:commandapi-shade:5.9'
 
-    implementation 'com.plotsquared:PlotSquared-Core:5.13.11'
-    implementation('com.plotsquared:PlotSquared-Bukkit:5.13.11') { transitive = false }
+    implementation('com.plotsquared:PlotSquared-Core:6.0.6-SNAPSHOT')
+    implementation('com.plotsquared:PlotSquared-Bukkit:6.0.6-SNAPSHOT') { transitive(false) }
 }
 
 processResources {
+    duplicatesStrategy(DuplicatesStrategy.INCLUDE)
     from(sourceSets.main.resources.srcDirs) {
         filter ReplaceTokens, tokens: [version: version]
     }

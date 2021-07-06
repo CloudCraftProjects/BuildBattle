@@ -30,7 +30,7 @@ public class RateCommand extends CommandAPICommand implements PlayerCommandExecu
     public void run(Player sender, Object[] args) throws WrapperCommandSyntaxException {
         int rating = (int) args[0];
 
-        BukkitPlayer player = BukkitUtil.getPlayer(sender);
+        BukkitPlayer player = BukkitUtil.adapt(sender);
         Plot plot = player.getCurrentPlot();
 
         if (plot == null) {
