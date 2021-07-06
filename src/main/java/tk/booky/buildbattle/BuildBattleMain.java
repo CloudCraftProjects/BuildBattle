@@ -1,24 +1,19 @@
 package tk.booky.buildbattle;
 
-import dev.jorel.commandapi.CommandAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import tk.booky.buildbattle.commands.OtherGameModeCommand;
-import tk.booky.buildbattle.commands.OwnGameModeCommand;
 import tk.booky.buildbattle.commands.RateCommand;
 import tk.booky.buildbattle.commands.TopCommand;
 import tk.booky.buildbattle.listener.JoinListener;
 
 public final class BuildBattleMain extends JavaPlugin {
 
+    public static BuildBattleMain main;
+
     @Override
     public void onLoad() {
-        // Unregister vanilla gamemode command for own implementation
-        CommandAPI.unregister("gamemode", true);
-
-        // Register custom gamemode command, for alias and more permission checking
-        new OwnGameModeCommand().register();
-        new OtherGameModeCommand().register();
+        // Set plugin instance
+        main = this;
 
         // Register commands for the rating system
         new RateCommand(this).register();
