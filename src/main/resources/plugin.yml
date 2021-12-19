@@ -1,5 +1,5 @@
 name: BuildBattle
-version: @version@
+version: ${version}
 main: tk.booky.buildbattle.BuildBattleMain
 api-version: 1.16
 prefix: BB
